@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\MediScheduler.Client\MediScheduler.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.5" />
+    <PackageReference Include="Radzen.Blazor" Version="4.32.1" />
   </ItemGroup>
 
 </Project>
