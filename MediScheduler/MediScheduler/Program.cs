@@ -1,5 +1,7 @@
 using MediScheduler.Client.Pages;
 using MediScheduler.Components;
+using MediScheduler.Entities;
+using Microsoft.EntityFrameworkCore;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,11 @@ builder.Services.AddRadzenComponents();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddDbContext<MediSchedulerContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DB")));
+
+builder.Services.AddScoped<DoctorService>();
 
 var app = builder.Build();
 
