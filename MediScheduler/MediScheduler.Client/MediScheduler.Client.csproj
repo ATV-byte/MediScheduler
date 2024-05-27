@@ -13,4 +13,10 @@
     <PackageReference Include="Radzen.Blazor" Version="4.32.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Pages\EditDoctorDialog.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
 </Project>

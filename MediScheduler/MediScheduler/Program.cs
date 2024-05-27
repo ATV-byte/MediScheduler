@@ -17,6 +17,8 @@ builder.Services.AddDbContext<MediSchedulerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DB")));
 
 builder.Services.AddScoped<DoctorService>();
+builder.Services.AddScoped<SpecialtyService>();
+builder.Services.AddScoped<Radzen.DialogService>();
 
 var app = builder.Build();
 
@@ -41,5 +43,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(MediScheduler.Client._Imports).Assembly);
+
 
 app.Run();

@@ -1,0 +1,65 @@
+﻿@page "/edit-doctor/{doctorId:int}"
+@using MediScheduler.DTO
+@inject DoctorService DoctorService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@code {
+    [Parameter]
+    public int DoctorId { get; set; }
+
+    private DoctorDTO doctor = new DoctorDTO();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctor = await DoctorService.GetDoctorByIdAsync(DoctorId);
+        isLoading = false;
+    }
+
+    private async Task UpdateDoctor()
+    {
+        await DoctorService.UpdateDoctorAsync(doctor);
+        NavigationManager.NavigateTo("/doctors");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/doctors");
+    }
+}
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <RadzenCard>
+        <h3>Edit Doctor</h3>
+        <RadzenTemplateForm Data="@doctor">
+            <RadzenFieldset legend="Doctor Information">
+                <RadzenFormField Text="First Name">
+                    <RadzenTextBox @bind-Value="@doctor.FirstName" />
+                </RadzenFormField>
+                <RadzenFormField Text="Last Name">
+                    <RadzenTextBox @bind-Value="@doctor.LastName" />
+                </RadzenFormField>
+                <RadzenFormField Text="License No.">
+                    <RadzenTextBox @bind-Value="@doctor.LicenseNo" />
+                </RadzenFormField>
+                <RadzenFormField Text="Specialty">
+                    <RadzenTextBox @bind-Value="@doctor.SpecialtyName" />
+                </RadzenFormField>
+                <RadzenFormField Text="Phone">
+                    <RadzenTextBox @bind-Value="@doctor.Phone" />
+                </RadzenFormField>
+                <RadzenFormField Text="Address">
+                    <RadzenTextBox @bind-Value="@doctor.Address" />
+                </RadzenFormField>
+            </RadzenFieldset>
+        </RadzenTemplateForm>
+        <RadzenButton Text="Save" Click="UpdateDoctor" />
+        <RadzenButton Text="Cancel" Click="Cancel" Style="margin-left: 10px;" />
+    </RadzenCard>
+}

@@ -1,0 +1,100 @@
+﻿@page "/doctors"
+@using Radzen.Blazor
+@using MediScheduler.Entities
+@using MediScheduler.DTO
+@inject DoctorService doctorService
+@inject SpecialtyService specialtyService
+@inject Radzen.DialogService dialogService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@if (doctors == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.P" TextAlign="Radzen.TextAlign.Left"><strong>Doctors</strong></RadzenText>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="Radzen.FilterMode.Advanced" AllowSorting="true" PageSize="7" AllowPaging="true" PagerHorizontalAlign="Radzen.HorizontalAlign.Left" ShowPagingSummary="true"
+                    Data="@doctors" ColumnWidth="300px" LogicalFilterOperator="Radzen.LogicalFilterOperator.Or" SelectionMode="Radzen.DataGridSelectionMode.Single" @bind-Value=@selectedDoctors class="rz-border-radius-6 rz-shadow-4"
+                    TItem="DoctorDTO" RowDoubleClick="@OnRowDoubleClick">
+        <Columns>
+            <RadzenDataGridColumn Property="FirstName" Filterable="true" Title="First Name" Frozen="true" Width="160px" />
+            <RadzenDataGridColumn Property="LastName" Filterable="true" Title="Last Name" Width="160px" />
+            <RadzenDataGridColumn Property="LicenseNo" Filterable="false" Title="License No." Frozen="true" Width="80px" />
+            <RadzenDataGridColumn Property="SpecialtyName" Filterable="true" Title="Specialty" Width="160px" />
+            <RadzenDataGridColumn Property="Phone" Filterable="true" Title="Phone No." Width="200px" />
+            <RadzenDataGridColumn Property="Address" Filterable="false" Title="Address" Width="200px" />
+        </Columns>
+    </RadzenDataGrid>
+}
+
+<div Class="rz-p-0 rz-p-md-12">
+    <RadzenText TextStyle="TextStyle.H5" TagName="TagName.P" TextAlign="Radzen.TextAlign.Left"><strong>Add a doctor</strong></RadzenText>
+    <RadzenRow Gap="1rem">
+        <RadzenColumn Size="12" SizeSM="6">
+            <RadzenStack>
+                <RadzenFormField Text="Last Name" Variant="Radzen.Variant.Outlined">
+                    <RadzenTextBox @bind-Value="@newDoctor.LastName" />
+                </RadzenFormField>
+                <RadzenFormField Text="First Name" Variant="Radzen.Variant.Outlined">
+                    <RadzenTextBox @bind-Value="@newDoctor.FirstName" />
+                </RadzenFormField>
+                <RadzenFormField Text="License No." Variant="Radzen.Variant.Outlined">
+                    <RadzenTextBox @bind-Value="@newDoctor.LicenseNo" />
+                </RadzenFormField>
+                <RadzenFormField Text="Specialty" Variant="Radzen.Variant.Outlined">
+                    <RadzenDropDownDataGrid Data=@specialties TextProperty="SpecialtyName" ValueProperty="SpecialtyId" @bind-Value="@newDoctor.SpecialtyId" />
+                </RadzenFormField>
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeSM="6">
+            <RadzenStack>
+                <RadzenFormField Text="Address" Variant="Radzen.Variant.Outlined">
+                    <RadzenTextArea @bind-Value="@newDoctor.Address" />
+                </RadzenFormField>
+                <RadzenFormField Text="Phone No." Variant="Radzen.Variant.Outlined">
+                    <RadzenNumeric @bind-Value="@newDoctor.Phone" />
+                </RadzenFormField>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <p> </p>
+    <RadzenButton style="width: 160px" Icon="save" BusyText="Saving ..." IsBusy=@busy Click=@AddDoctor Text="Save" />
+</div>
+
+@code {
+    private IEnumerable<DoctorDTO> doctors;
+    private IList<DoctorDTO> selectedDoctors;
+    DoctorDTO newDoctor = new DoctorDTO();
+    IEnumerable<SpecialtyDTO> specialties;
+    bool busy = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        doctors = await doctorService.GetDoctorsAsync();
+        specialties = await specialtyService.GetAllSpecialtiesAsync();
+        selectedDoctors = new List<DoctorDTO>() { doctors.FirstOrDefault() };
+    }
+
+    private async Task AddDoctor()
+    {
+        busy = true;
+        if (newDoctor != null)
+        {
+            await doctorService.AddDoctorAsync(newDoctor);
+            doctors = await doctorService.GetDoctorsAsync();
+            newDoctor = new DoctorDTO();
+        }
+        else
+        {
+            newDoctor = new DoctorDTO();
+        }
+        busy = false;
+    }
+
+    private void OnRowDoubleClick(Radzen.DataGridRowMouseEventArgs<DoctorDTO> args)
+    {
+        NavigationManager.NavigateTo($"/edit-doctor/{args.Data.DoctorId}");
+    }
+}

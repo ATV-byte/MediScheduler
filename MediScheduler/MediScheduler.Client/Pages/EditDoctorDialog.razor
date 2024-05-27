@@ -1,0 +1,14 @@
+﻿@inject Radzen.DialogService dialogService
+@rendermode InteractiveServer
+
+
+<div>
+    <h3>This is a minimal dialog</h3>
+    <button @onclick="CloseDialog">Close</button>
+</div>
+@code {
+    private void CloseDialog()
+    {
+        dialogService.Close();
+    }
+}
