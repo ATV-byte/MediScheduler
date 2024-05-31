@@ -2,11 +2,13 @@
 @using Radzen.Blazor
 @using MediScheduler.Entities
 @using MediScheduler.DTO
+@using Microsoft.AspNetCore.Authorization
 @inject DoctorService doctorService
 @inject SpecialtyService specialtyService
 @inject Radzen.DialogService dialogService
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "user")]
 
 @if (doctors == null)
 {
@@ -67,7 +69,6 @@ else
             <RadzenButton style="width: 160px" Icon="save" BusyText="Saving ..." IsBusy=@busy Click=@AddDoctor Text="Save" />
         </div>
 *@
-
 @code {
     private IEnumerable<DoctorDTO> doctors;
     private IList<DoctorDTO> selectedDoctors;

@@ -1,0 +1,151 @@
+﻿@page "/profile"
+@using MediScheduler.DTO
+@using MediScheduler.Services
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager Navigation
+@inject ProfileService ProfileService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = "user")]
+
+<section class="why-choose section" >
+    <div class="container">
+<EditForm Model="@PatientDTO" OnValidSubmit="HandleValidSubmit" FormName="profileForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label>First Name</label>
+        <InputText @bind-Value="PatientDTO.FirstName" class="form-control" />
+        <ValidationMessage For="() => PatientDTO.FirstName" />
+    </div>
+    <div class="mb-3">
+        <label>Last Name</label>
+        <InputText @bind-Value="PatientDTO.LastName" class="form-control" />
+        <ValidationMessage For="() => PatientDTO.LastName" />
+    </div>
+    <div class="mb-3">
+        <label>Address</label>
+        <InputText @bind-Value="PatientDTO.Address" class="form-control" />
+        <ValidationMessage For="() => PatientDTO.Address" />
+    </div>
+    <div class="mb-3">
+        <label>Phone</label>
+        <InputText @bind-Value="PatientDTO.Phone" class="form-control" />
+        <ValidationMessage For="() => PatientDTO.Phone" />
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText @bind-Value="PatientDTO.Email" class="form-control" />
+        <ValidationMessage For="() => PatientDTO.Email" />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText @bind-Value="UserDTO.Password" type="password" class="form-control" />
+        <ValidationMessage For="() => UserDTO.Password" />
+    </div>
+    <button class="btn btn-primary" type="submit">Update Profile</button>
+</EditForm>
+    </div>
+</section>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    public UserDTO UserDTO { get; set; } = new();
+
+    [SupplyParameterFromForm]
+    public PatientDTO PatientDTO { get; set; } = new();
+    public PatientDTO originalPatientDTO { get; set; } = new();
+    public UserDTO originalUserDTO { get; set; } = new();
+
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfileData();
+    }
+
+    private async Task LoadProfileData()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated ?? false)
+            {
+                var userName = user.Identity.Name;
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    var (userDTO, patientDTO) = await ProfileService.GetProfileData(userName);
+                    if (userDTO != null && patientDTO != null)
+                    {
+                        originalUserDTO = userDTO;
+                        originalPatientDTO = patientDTO;
+                        if (PatientDTO.FirstName == null && UserDTO.Password == null)
+                        {
+                            PatientDTO = originalPatientDTO;
+                            UserDTO = originalUserDTO;
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = "Unable to load profile data.";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Username is null or empty.";
+                }
+            }
+            else
+            {
+                errorMessage = "User is not authenticated.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading profile data: {ex.Message}";
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            originalPatientDTO.FirstName = PatientDTO.FirstName;
+            originalPatientDTO.LastName = PatientDTO.LastName;
+            originalPatientDTO.Address = PatientDTO.Address;
+            originalPatientDTO.Phone = PatientDTO.Phone;
+            originalPatientDTO.Email = PatientDTO.Email;
+            originalUserDTO.Password = UserDTO.Password;
+
+            var success = await ProfileService.UpdateProfile(originalUserDTO, originalPatientDTO);
+            if (success)
+            {
+                successMessage = "Profile updated successfully";
+                errorMessage = null; // Clear error message if any
+            }
+            else
+            {
+                errorMessage = "Error updating profile";
+                successMessage = null; // Clear success message if any
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Exception updating profile: {ex.Message}";
+            successMessage = null; // Clear success message if any
+        }
+    }
+}

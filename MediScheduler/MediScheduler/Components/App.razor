@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="keywords" content="Site keywords here">
-    <meta name="description" content="">
+    <meta name="description" content="Description here">
     <meta name='copyright' content=''>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -47,14 +47,27 @@
 </head>
 
 <body>
-    <Routes />
-    <script src="_framework/blazor.web.js"></script>
+    <div id="app">
+        <Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+                <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="typeof(Layout.MainLayout)">
+                    <p>Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
-    <!-- jquery Min JS -->
+    <!-- jQuery Min JS -->
     <script src="js/jquery.min.js"></script>
-    <!-- jquery Migrate JS -->
+    <!-- jQuery Migrate JS -->
     <script src="js/jquery-migrate-3.0.0.js"></script>
-    <!-- jquery Ui JS -->
+    <!-- jQuery UI JS -->
     <script src="js/jquery-ui.min.js"></script>
     <!-- Easing JS -->
     <script src="js/easing.js"></script>
@@ -64,19 +77,19 @@
     <script src="js/popper.min.js"></script>
     <!-- Bootstrap Datepicker JS -->
     <script src="js/bootstrap-datepicker.js"></script>
-    <!-- Jquery Nav JS -->
+    <!-- jQuery Nav JS -->
     <script src="js/jquery.nav.js"></script>
     <!-- Slicknav JS -->
     <script src="js/slicknav.min.js"></script>
     <!-- ScrollUp JS -->
     <script src="js/jquery.scrollUp.min.js"></script>
-    <!-- Niceselect JS -->
+    <!-- Nice Select JS -->
     <script src="js/niceselect.js"></script>
-    <!-- Tilt Jquery JS -->
+    <!-- Tilt jQuery JS -->
     <script src="js/tilt.jquery.min.js"></script>
     <!-- Owl Carousel JS -->
     <script src="js/owl-carousel.js"></script>
-    <!-- counterup JS -->
+    <!-- Counterup JS -->
     <script src="js/jquery.counterup.min.js"></script>
     <!-- Steller JS -->
     <script src="js/steller.js"></script>

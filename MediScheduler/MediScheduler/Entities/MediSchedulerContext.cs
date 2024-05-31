@@ -33,6 +33,7 @@ public partial class MediSchedulerContext : DbContext
 
     public virtual DbSet<Specialty> Specialties { get; set; }
 
+    public virtual DbSet<User> Users { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Appointment>(entity =>
@@ -221,6 +222,34 @@ public partial class MediSchedulerContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("specialtyName");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("PK__User__CB9A1CFFE77C2DE7");
+
+            entity.ToTable("User");
+
+            entity.HasIndex(e => e.Username, "UQ__User__F3DBC572C0189560").IsUnique();
+
+            entity.Property(e => e.UserId).HasColumnName("userId");
+            entity.Property(e => e.Password)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("password");
+            entity.Property(e => e.PatientId).HasColumnName("patientId");
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("role");
+            entity.Property(e => e.Username)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("username");
+
+            entity.HasOne(d => d.Patient).WithMany(p => p.Users)
+                .HasForeignKey(d => d.PatientId)
+                .HasConstraintName("FK__User__patientId__03F0984C");
         });
 
         OnModelCreatingPartial(modelBuilder);

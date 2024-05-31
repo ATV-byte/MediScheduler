@@ -18,4 +18,6 @@ public partial class Patient
     public virtual ContactData? ContactData { get; set; }
 
     public virtual ICollection<RecordHistory> RecordHistories { get; set; } = new List<RecordHistory>();
+
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

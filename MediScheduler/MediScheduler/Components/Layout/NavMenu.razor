@@ -1,94 +1,97 @@
 ﻿@rendermode InteractiveServer
 
 <!-- Header Area -->
-		<header class="header" >
-			<!-- Topbar -->
-			<div class="topbar">
-				<div class="container">
-					<div class="row">
-						<div class="col-lg-6 col-md-5 col-12">
-							<!-- Contact -->
-							<ul class="top-link">
-								<NavLink href="/" @onclick="HandleClick"> Home</NavLink>
-								<NavLink  href="doctors"> Doctors</NavLink>
-								<NavLink  href="weather"> Weather</NavLink>
-								<li><a href="#">FAQ</a></li>
-							</ul>
-							<!-- End Contact -->
-						</div>
-						<div class="col-lg-6 col-md-7 col-12">
-							<!-- Top Contact -->
-							<ul class="top-contact">
-								<li><i class="fa fa-phone"></i>+880 1234 56789</li>
-								<li><i class="fa fa-envelope"></i><a href="mailto:support@yourmail.com">support@yourmail.com</a></li>
-							</ul>
-							<!-- End Top Contact -->
-						</div>
-					</div>
-				</div>
-			</div>
-			<!-- End Topbar -->
-			<!-- Header Inner -->
-			<div class="header-inner">
-				<div class="container">
-					<div class="inner">
-						<div class="row">
-							<div class="col-lg-3 col-md-3 col-12">
-								<!-- Start Logo -->
-								<div class="logo">
-									<a href="\"><img src="img/logo.png" alt="#"></a>
-								</div>
-								<!-- End Logo -->
-								<!-- Mobile Nav -->
-								<div class="mobile-nav"></div>
-								<!-- End Mobile Nav -->
-							</div>
-							<div class="col-lg-7 col-md-9 col-12">
-								<!-- Main Menu -->
-								<div class="main-menu">
-									<nav class="navigation">
-										<ul class="nav menu">
-											<li class="active"><a href="\">Home <i class="icofont-rounded-down"></i></a>
-											</li>
-									<li>
-										<a href="/doctors">Doctos </a>
-											</li>
-											<li><a href="#">Services </a></li>
-											<li><a href="#">Pages <i class="icofont-rounded-down"></i></a>
-												<ul class="dropdown">
-													<li><a href="404.html">404 Error</a></li>
-												</ul>
-											</li>
-											<li><a href="#">Blogs <i class="icofont-rounded-down"></i></a>
-												<ul class="dropdown">
-													<li><a href="blog-single.html">Blog Details</a></li>
-												</ul>
-											</li>
-											<li><a href="contact.html">Contact Us</a></li>
-										</ul>
-									</nav>
-								</div>
-								<!--/ End Main Menu -->
-							</div>
-							<div class="col-lg-2 col-12">
-								<div class="get-quote">
-									<a href="appointment.html" class="btn">Book Appointment</a>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<!--/ End Header Inner -->
-		</header>
-		<!-- End Header Area -->
-
+<header class="header">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-5 col-12">
+                    <!-- Contact -->
+                    <ul class="top-link">
+                        <li><NavLink href="/" Match="NavLinkMatch.All" ActiveClass="active">Home</NavLink></li>
+                        <li><NavLink href="/doctors" ActiveClass="active">Doctors</NavLink></li>
+                        <AuthorizeView Roles="user">
+                            <Authorized>
+                                <li><NavLink href="/profile" ActiveClass="active">Profile</NavLink></li>
+                            </Authorized>
+                        </AuthorizeView>
+                        <li><NavLink href="/faq" ActiveClass="active">FAQ</NavLink></li>
+                    </ul>
+                    <!-- End Contact -->
+                </div>
+                <div class="col-lg-6 col-md-7 col-12">
+                    <!-- Top Contact -->
+                    <ul class="top-contact">
+                        <li><i class="fa fa-phone"></i>+880 1234 56789</li>
+                        <li><i class="fa fa-envelope"></i><a href="mailto:support@yourmail.com">support@yourmail.com</a></li>
+                    </ul>
+                    <!-- End Top Contact -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Topbar -->
+    <!-- Header Inner -->
+    <div class="header-inner">
+        <div class="container">
+            <div class="inner">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-12">
+                        <!-- Start Logo -->
+                        <div class="logo">
+                            <a href="/"><img src="img/logo.png" alt="Logo"></a>
+                        </div>
+                        <!-- End Logo -->
+                        <!-- Mobile Nav -->
+                        <div class="mobile-nav"></div>
+                        <!-- End Mobile Nav -->
+                    </div>
+                    <div class="col-lg-7 col-md-9 col-12">
+                        <!-- Main Menu -->
+                        <div class="main-menu">
+                            <nav class="navigation">
+                                <ul class="nav menu">
+                                    <li><NavLink href="/" Match="NavLinkMatch.All" ActiveClass="active">Home</NavLink></li>
+                                    <li><NavLink href="/doctors" ActiveClass="active">Doctors</NavLink></li>
+                                    <li><NavLink href="/book-appointment" ActiveClass="active">Book Appointment</NavLink></li>
+                                    <AuthorizeView Roles="user">
+                                        <Authorized>
+                                            <li><NavLink href="/profile" ActiveClass="active">Profile</NavLink></li>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                    <li><NavLink href="/contact" ActiveClass="active">Contact Us</NavLink></li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <!--/ End Main Menu -->
+                    </div>
+                    <AuthorizeView Roles="user">
+                        <Authorized>
+                                    <div class="col-lg-2 col-12">
+                                        <div class="get-quote">
+                                            <a href="/logout" class="btn">Log Out</a>
+                                        </div>
+                                    </div>
+                        </Authorized>
+                    </AuthorizeView>
+                    <AuthorizeView>
+                        <NotAuthorized>
+                            <div class="col-lg-2 col-12">
+                                <div class="get-quote">
+                                    <a href="/login" class="btn">Log In</a>
+                                </div>
+                            </div>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--/ End Header Inner -->
+</header>
+<!-- End Header Area -->
 @code {
-	@inject NavigationManager NavigationManager;
+    @inject NavigationManager NavigationManager;
 
-	private void HandleClick()
-	{
-		NavigationManager.NavigateTo("/", true);
-	}
 }
-		

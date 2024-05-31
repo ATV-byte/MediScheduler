@@ -1,7 +1,10 @@
 using MediScheduler.Client.Pages;
 using MediScheduler.Components;
 using MediScheduler.Entities;
+using MediScheduler.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Radzen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +22,20 @@ builder.Services.AddDbContext<MediSchedulerContext>(options =>
 builder.Services.AddScoped<DoctorService>();
 builder.Services.AddScoped<SpecialtyService>();
 builder.Services.AddScoped<Radzen.DialogService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ProfileService>();
+
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "auth_token";
+        options.LoginPath = "/login";
+        options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+        options.AccessDeniedPath = "/access-denied";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 
@@ -37,6 +54,10 @@ else
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
