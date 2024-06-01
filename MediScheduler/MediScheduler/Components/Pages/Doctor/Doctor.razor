@@ -20,7 +20,7 @@ else
     <div class="container">
     <RadzenText TextStyle="TextStyle.H3" TagName="TagName.P" TextAlign="Radzen.TextAlign.Left"><strong>Doctors</strong></RadzenText>
     <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="Radzen.FilterMode.Advanced" AllowSorting="true" PageSize="7" AllowPaging="true" PagerHorizontalAlign="Radzen.HorizontalAlign.Left" ShowPagingSummary="true"
-                    Data="@doctors" ColumnWidth="300px" LogicalFilterOperator="Radzen.LogicalFilterOperator.Or" SelectionMode="Radzen.DataGridSelectionMode.Single" @bind-Value=@selectedDoctors class="rz-border-radius-6 rz-shadow-4 unstyled"
+                            Data="@doctors" ColumnWidth="300px" LogicalFilterOperator="Radzen.LogicalFilterOperator.Or" SelectionMode="Radzen.DataGridSelectionMode.Single" @bind-Value=@selectedDoctors class="rz-border-radius-6 rz-shadow-4 unstyled"
                     TItem="DoctorDTO">
         <Columns>
             <RadzenDataGridColumn Property="FirstName" Filterable="true" Title="First Name" Frozen="true" Width="160px" />
@@ -103,5 +103,5 @@ else
     {
         NavigationManager.NavigateTo($"/edit-doctor/{args.Data.DoctorId}");
     }
-    *@
+            *@
 }

@@ -54,7 +54,11 @@
                                 <ul class="nav menu">
                                     <li><NavLink href="/" Match="NavLinkMatch.All" ActiveClass="active">Home</NavLink></li>
                                     <li><NavLink href="/doctors" ActiveClass="active">Doctors</NavLink></li>
-                                    <li><NavLink href="/book-appointment" ActiveClass="active">Book Appointment</NavLink></li>
+                                    <AuthorizeView Roles="user">
+                                        <Authorized>
+                                            <li><NavLink href="/browse-schedule" ActiveClass="active">Book Appointment</NavLink></li>
+                                        </Authorized>
+                                    </AuthorizeView>
                                     <AuthorizeView Roles="user">
                                         <Authorized>
                                             <li><NavLink href="/profile" ActiveClass="active">Profile</NavLink></li>

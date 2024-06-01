@@ -1,0 +1,170 @@
+﻿@page "/browse-schedule"
+@using MediScheduler.DTO
+@using MediScheduler.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@rendermode InteractiveServer
+@inject DoctorScheduleService DoctorScheduleService
+@inject NavigationManager NavigationManager
+@inject SpecialtyService SpecialtyService
+@attribute [Authorize(Roles = "user")]
+
+<section class="why-choose section">
+    <div class="container">
+        <RadzenFieldset Text="Filters">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="10px">
+                <RadzenDropDownDataGrid Data="@specialties" TextProperty="SpecialtyName" ValueProperty="SpecialtyId" @bind-Value="@filterSpecialtyId" Placeholder="Select Specialty">
+                    <Template Context="data">
+                        @if (data.SpecialtyId == -1)
+                        {
+                            <div style="color: red;">Clear Selection</div>
+                        }
+                        else
+                        {
+                            <div>@data.SpecialtyName</div>
+                        }
+                    </Template>
+                </RadzenDropDownDataGrid>
+                <RadzenTextBox Placeholder="Doctor Name" Style="width: 150px" @bind-Value="filterDoctorName" />
+                <RadzenDatePicker Placeholder="Date" DateFormat="dd/MM/yyyy" Style="width: 150px" @bind-Value="filterDate" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Secondary" Click="@(() => ClearFilter("Date"))" Style="margin-left: 5px" />
+                <RadzenDropDown Placeholder="Start Time" Style="width: 150px" @bind-Value="filterStartTime" Data="timeOptions" TextProperty="Display" ValueProperty="Value" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Secondary" Click="@(() => ClearFilter("StartTime"))" Style="margin-left: 5px" />
+                <RadzenDropDown Placeholder="End Time" Style="width: 150px" @bind-Value="filterEndTime" Data="timeOptions" TextProperty="Display" ValueProperty="Value" />
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Secondary" Click="@(() => ClearFilter("EndTime"))" Style="margin-left: 5px" />
+                <RadzenButton Shade="Shade.Lighter" Text="Filter" Style="width: 100px" Click="@OnFilterChanged" />
+            </RadzenStack>
+        </RadzenFieldset>
+
+        <RadzenDataList AllowVirtualization="@allowVirtualization" Style="@(allowVirtualization ? "height:400px;overflow:auto;" : "")"
+                        WrapItems="@(!allowVirtualization)" AllowPaging="@(!allowVirtualization)"
+                        Data="@filteredSchedules" TItem="DoctorScheduleDTO" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+            <Template Context="schedule">
+                <RadzenCard Style="width: 100%; padding: 0;">
+                    <RadzenRow Gap="0">
+                        <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 product-title">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Specialty</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.SpecialtyName)</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Date</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.Date.ToString("yyyy-MM-dd"))</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="1" Class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Start</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.StartTime.ToString(@"HH\:mm"))</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="1" Class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">End</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.EndTime.ToString(@"HH\:mm"))</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Doctor</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.DoctorFirstName + " " + schedule.DoctorLastName)</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="1" Class="rz-p-4">
+                            <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Status</RadzenText>
+                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(schedule.DoctorScheduleStatusName)</RadzenText>
+                        </RadzenColumn>
+                        <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                            <RadzenButton Shade="Shade.Lighter" Text="Book Appointment" Style="width: 100%" Click="() => BookAppointment(schedule.DoctorScheduleId)" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenCard>
+            </Template>
+        </RadzenDataList>
+    </div>
+</section>
+
+<style>
+    .product-title {
+        min-height: 72px;
+        background-color: var(--rz-primary-lighter); /* Change the background color to light blue */
+    }
+
+    .column-header {
+        font-size: 14px;
+    }
+
+    .column-data {
+        font-size: 18px;
+    }
+</style>
+
+@code {
+    bool allowVirtualization = false;
+
+    private List<DoctorScheduleDTO> schedules;
+    private List<DoctorScheduleDTO> filteredSchedules;
+
+    private int? filterSpecialtyId;
+    private string filterDoctorName;
+    private DateTime? filterDate;
+    private TimeSpan? filterStartTime;
+    private TimeSpan? filterEndTime;
+    IEnumerable<SpecialtyDTO> specialties;
+
+    private List<TimeOption> timeOptions = Enumerable.Range(0, 24 * 60 / 15)
+        .Select(i => new TimeOption { Value = TimeSpan.FromMinutes(i * 15), Display = TimeSpan.FromMinutes(i * 15).ToString(@"hh\:mm") })
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        try
+        {
+            schedules = await DoctorScheduleService.GetSchedulesAsync();
+            filteredSchedules = schedules;
+
+            var allSpecialties = await SpecialtyService.GetAllSpecialtiesAsync();
+            specialties = new List<SpecialtyDTO> { new SpecialtyDTO { SpecialtyId = -1, SpecialtyName = "Clear Selection" } }.Concat(allSpecialties);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading schedules: {ex.Message}");
+            schedules = new List<DoctorScheduleDTO>();
+            filteredSchedules = schedules;
+        }
+    }
+
+    private void OnFilterChanged()
+    {
+        filteredSchedules = schedules
+            .Where(schedule =>
+                (!filterSpecialtyId.HasValue || filterSpecialtyId == -1 || schedule.SpecialtyId == filterSpecialtyId) &&
+                (string.IsNullOrEmpty(filterDoctorName) || (schedule.DoctorFirstName + " " + schedule.DoctorLastName).Contains(filterDoctorName, StringComparison.OrdinalIgnoreCase)) &&
+                (!filterDate.HasValue || schedule.Date == DateOnly.FromDateTime(filterDate.Value.Date)) &&
+                (!filterStartTime.HasValue || schedule.StartTime >= TimeOnly.FromTimeSpan(filterStartTime.Value)) &&
+                (!filterEndTime.HasValue || schedule.EndTime <= TimeOnly.FromTimeSpan(filterEndTime.Value)))
+            .ToList();
+    }
+
+    private void ClearFilter(string filterType)
+    {
+        switch (filterType)
+        {
+            case "Date":
+                filterDate = null;
+                break;
+            case "StartTime":
+                filterStartTime = null;
+                break;
+            case "EndTime":
+                filterEndTime = null;
+                break;
+        }
+        OnFilterChanged();
+    }
+
+    private void BookAppointment(int doctorScheduleId)
+    {
+        NavigationManager.NavigateTo($"/book-appointment/{doctorScheduleId}");
+    }
+
+    public class TimeOption
+    {
+        public TimeSpan Value { get; set; }
+        public string Display { get; set; }
+    }
+}
