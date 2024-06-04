@@ -64,7 +64,11 @@
                                             <li><NavLink href="/profile" ActiveClass="active">Profile</NavLink></li>
                                         </Authorized>
                                     </AuthorizeView>
-                                    <li><NavLink href="/contact" ActiveClass="active">Contact Us</NavLink></li>
+                                    <AuthorizeView Roles="user">
+                                        <Authorized>
+                                            <li><NavLink href="/my-appointments" ActiveClass="active">My Appointments</NavLink></li>
+                                        </Authorized>
+                                    </AuthorizeView>
                                 </ul>
                             </nav>
                         </div>

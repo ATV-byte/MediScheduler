@@ -1,0 +1,142 @@
+﻿@page "/book-appointment/{doctorScheduleId:int}"
+@using MediScheduler.DTO
+@using MediScheduler.Entities
+@using MediScheduler.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@inject DoctorScheduleService DoctorScheduleService
+@inject NavigationManager NavigationManager
+@inject ProfileService ProfileService
+@inject AppointmentService AppointmentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "user")]
+@rendermode InteractiveServer
+
+<section class="why-choose section">
+    <div class="container">
+        <RadzenCard>
+            <RadzenCardTitle>
+                Book Appointment
+            </RadzenCardTitle>
+            <RadzenCardContent>
+                @if (doctorSchedule != null)
+                {
+                    <RadzenForm TItem="DoctorScheduleDTO" Data="@doctorSchedule">
+                        <RadzenFieldset>
+                            <RadzenLabel Text="Doctor" />
+                            <RadzenTextBox Value="@(doctorSchedule.DoctorFirstName + " " + doctorSchedule.DoctorLastName)" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="Specialty" />
+                            <RadzenTextBox Value="@(doctorSchedule.SpecialtyName)" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="Date" />
+                            <RadzenTextBox Value="@(doctorSchedule.Date.ToString("yyyy-MM-dd"))" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="Start Time" />
+                            <RadzenTextBox Value="@(doctorSchedule.StartTime.ToString("HH\\:mm"))" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="End Time" />
+                            <RadzenTextBox Value="@(doctorSchedule.EndTime.ToString("HH\\:mm"))" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="Patient Name" />
+                            <RadzenTextBox Value="@(patientName)" ReadOnly="true" Style="width: 100%;" />
+
+                            <RadzenLabel Text="Appointment Date" />
+                            <RadzenTextBox Value="@(appointmentDate.ToString("yyyy-MM-dd HH:mm"))" ReadOnly="true" Style="width: 100%;" />
+                        </RadzenFieldset>
+
+                        <RadzenButton Text="Confirm Appointment" Click="@BookAppointmentAsync" Style="width: 100%;" />
+                    </RadzenForm>
+                }
+                else
+                {
+                    <p>Loading...</p>
+                }
+            </RadzenCardContent>
+        </RadzenCard>
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public int doctorScheduleId { get; set; }
+
+    private DoctorScheduleDTO doctorSchedule;
+    private string patientName;
+    private DateTime appointmentDate;
+    private PatientDTO patientDTO;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            // Fetch doctor schedule details
+            doctorSchedule = await DoctorScheduleService.GetScheduleByIdAsync(doctorScheduleId);
+
+            // Get the current user's username
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userName = user.Identity?.Name; // Retrieve the username from the authenticated user
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+
+            // Fetch profile data
+            var (_, profilePatientDTO) = await ProfileService.GetProfileData(userName);
+
+            if (profilePatientDTO == null)
+            {
+                throw new Exception("Patient profile not found.");
+            }
+
+            patientDTO = profilePatientDTO;
+            patientName = $"{patientDTO.FirstName} {patientDTO.LastName}";
+            appointmentDate = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Handle error (e.g., display a message, redirect, etc.)
+        }
+    }
+
+    private async Task BookAppointmentAsync()
+    {
+        try
+        {
+            // Create a new AppointmentDTO
+            var appointmentDTO = new AppointmentDTO
+            {
+                DoctorScheduleId = doctorScheduleId,
+                PatientId = patientDTO.PatientId,
+                AppointmentStatusId = 1, // 1 is the ID for 'Confirmed' status
+            };
+
+            // Save the appointment
+            var success = await AppointmentService.SaveAppointmentAsync(appointmentDTO);
+
+            if (success)
+            {
+                // Update doctor schedule status to unavailable (id 4)
+                await DoctorScheduleService.UpdateDoctorScheduleStatusAsync(doctorScheduleId, 4);
+
+                // Navigate back to the schedule list or show a confirmation
+                NavigationManager.NavigateTo("/browse-schedule");
+            }
+            else
+            {
+                // Handle the case where the appointment could not be saved
+                Console.Error.WriteLine("Error: Appointment could not be saved.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}

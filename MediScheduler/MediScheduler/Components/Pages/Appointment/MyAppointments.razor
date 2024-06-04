@@ -1,0 +1,108 @@
+﻿@page "/my-appointments"
+@using MediScheduler.DTO
+@using MediScheduler.Entities
+@using MediScheduler.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Radzen
+@inject AppointmentService AppointmentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "user")]
+@rendermode InteractiveServer
+
+<section class="why-choose section">
+    <div class="container">
+        <RadzenCard>
+            <RadzenCardTitle>
+                My Appointments
+            </RadzenCardTitle>
+            <RadzenCardContent>
+                @if (appointments != null && appointments.Count > 0)
+                {
+                    <RadzenDataList Data="@appointments" TItem="AppointmentDTO" PageSize="5" ShowPagingSummary="true">
+                        <Template Context="appointment">
+                            <RadzenCard Style="width: 100%; padding: 0; margin-bottom: 10px;">
+                                <RadzenRow Gap="0">
+                                    <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Doctor</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.DoctorFirstName + " " + appointment.DoctorLastName)</RadzenText>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Specialty</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.SpecialtyName)</RadzenText>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Date</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.Date.ToString("yyyy-MM-dd"))</RadzenText>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Start Time</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.StartTime.ToString(@"HH\:mm"))</RadzenText>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">End Time</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.EndTime.ToString(@"HH\:mm"))</RadzenText>
+                                    </RadzenColumn>
+                                </RadzenRow>
+                                <RadzenRow>
+                                    <RadzenColumn Size="12" Class="text-center rz-p-4">
+                                        <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Appointment Status</RadzenText>
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="column-data">@(appointment.AppointmentStatusName)</RadzenText>
+                                    </RadzenColumn>
+                                </RadzenRow>
+                            </RadzenCard>
+                        </Template>
+                    </RadzenDataList>
+                }
+                else
+                {
+                    <p>No appointments found.</p>
+                }
+            </RadzenCardContent>
+        </RadzenCard>
+    </div>
+</section>
+
+<style>
+    .column-header {
+        font-size: 14px;
+    }
+
+    .column-data {
+        font-size: 18px;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+</style>
+
+@code {
+    private List<AppointmentDTO> appointments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        try
+        {
+            // Get the current user's username
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userName = user.Identity?.Name; // Retrieve the username from the authenticated user
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new Exception("User is not authenticated.");
+            }
+
+            // Fetch appointments for the current user
+            appointments = await AppointmentService.GetAppointmentsByPatientUserNameAsync(userName);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+            // Handle error (e.g., display a message, redirect, etc.)
+        }
+    }
+}

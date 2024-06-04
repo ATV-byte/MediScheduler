@@ -25,6 +25,7 @@ builder.Services.AddScoped<Radzen.DialogService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<DoctorScheduleService>();
+builder.Services.AddScoped<AppointmentService>();
 
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
