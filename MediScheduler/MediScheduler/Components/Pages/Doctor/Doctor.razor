@@ -12,13 +12,29 @@
 
 @if (doctors == null)
 {
-    <p>Loading...</p>
+    <div class="preloader">
+        <div class="loader">
+            <div class="loader-outter"></div>
+            <div class="loader-inner"></div>
+
+            <div class="indicator">
+                <svg width="16px" height="12px">
+                    <polyline id="back" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                    <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                </svg>
+            </div>
+        </div>
+    </div>
 }
 else
 {
 <section class="why-choose section" >
     <div class="container">
-    <RadzenText TextStyle="TextStyle.H3" TagName="TagName.P" TextAlign="Radzen.TextAlign.Left"><strong>Doctors</strong></RadzenText>
+            <div class="section-title">
+                <h2>Our Doctors</h2>
+                <img src="img/section-img.png" alt="#">
+            </div>
+            <div></div>
     <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="Radzen.FilterMode.Advanced" AllowSorting="true" PageSize="7" AllowPaging="true" PagerHorizontalAlign="Radzen.HorizontalAlign.Left" ShowPagingSummary="true"
                             Data="@doctors" ColumnWidth="300px" LogicalFilterOperator="Radzen.LogicalFilterOperator.Or" SelectionMode="Radzen.DataGridSelectionMode.Single" @bind-Value=@selectedDoctors class="rz-border-radius-6 rz-shadow-4 unstyled"
                     TItem="DoctorDTO">

@@ -9,7 +9,7 @@
                 <div class="col-lg-6 col-md-5 col-12">
                     <!-- Contact -->
                     <ul class="top-link">
-                        <li><NavLink href="/" Match="NavLinkMatch.All" ActiveClass="active">Home</NavLink></li>
+                        <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="HandleClick" ActiveClass="active">Home</NavLink></li>
                         <li><NavLink href="/doctors" ActiveClass="active">Doctors</NavLink></li>
                         <AuthorizeView Roles="user">
                             <Authorized>
@@ -40,7 +40,7 @@
                     <div class="col-lg-3 col-md-3 col-12">
                         <!-- Start Logo -->
                         <div class="logo">
-                            <a href="/"><img src="img/logo.png" alt="Logo"></a>
+                            <a href="/" @onclick="HandleClick"><img src="img/logo.png" alt="Logo"></a>
                         </div>
                         <!-- End Logo -->
                         <!-- Mobile Nav -->
@@ -52,7 +52,7 @@
                         <div class="main-menu">
                             <nav class="navigation">
                                 <ul class="nav menu">
-                                    <li><NavLink href="/" Match="NavLinkMatch.All" ActiveClass="active">Home</NavLink></li>
+                                    <li><NavLink href="/" Match="NavLinkMatch.All" @onclick="HandleClick" ActiveClass="active">Home</NavLink></li>
                                     <li><NavLink href="/doctors" ActiveClass="active">Doctors</NavLink></li>
                                     <AuthorizeView Roles="user">
                                         <Authorized>
@@ -101,5 +101,10 @@
 <!-- End Header Area -->
 @code {
     @inject NavigationManager NavigationManager;
+
+    private void HandleClick()
+    {
+        NavigationManager.NavigateTo("/", true);
+    }
 
 }

@@ -14,11 +14,12 @@
 @rendermode InteractiveServer
 
 <section class="why-choose section">
+    <div class="section-title">
+        <h2>Confirm your appointment</h2>
+    </div>
+    <div></div>
     <div class="container">
         <RadzenCard>
-            <RadzenCardTitle>
-                Book Appointment
-            </RadzenCardTitle>
             <RadzenCardContent>
                 @if (doctorSchedule != null)
                 {
@@ -43,7 +44,7 @@
                             <RadzenTextBox Value="@(patientName)" ReadOnly="true" Style="width: 100%;" />
 
                             <RadzenLabel Text="Appointment Date" />
-                            <RadzenTextBox Value="@(appointmentDate.ToString("yyyy-MM-dd HH:mm"))" ReadOnly="true" Style="width: 100%;" />
+                            <RadzenTextBox Value="@(appointmentDate.ToString("yyyy-MM-dd"))" ReadOnly="true" Style="width: 100%;" />
                         </RadzenFieldset>
 
                         <RadzenButton Text="Confirm Appointment" Click="@BookAppointmentAsync" Style="width: 100%;" />
