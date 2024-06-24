@@ -90,5 +90,19 @@ namespace MediScheduler.Services
 
             return (userDTO, patientDTO);
         }
+
+        public async Task<int> GetRisk(string userName)
+        {
+            if (userName == "tudorachevlad")
+            {
+                await Task.Delay(10);
+                return 90;
+            }
+            else
+            {
+                await Task.Delay(10);
+                return 10;
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediScheduler.Entities;
 using MediScheduler.DTO;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,12 +18,14 @@ public class DoctorScheduleService
     public async Task<List<DoctorScheduleDTO>> GetSchedulesAsync()
     {
         var today = DateOnly.FromDateTime(DateTime.Today);
+        var now = TimeOnly.FromDateTime(DateTime.Now);
 
         var schedules = await _context.DoctorSchedules
             .Include(ds => ds.Doctor)
             .Include(ds => ds.DoctorScheduleStatus)
             .Include(ds => ds.Doctor.Specialty)
-            .Where(ds => ds.Date >= today && (ds.DoctorScheduleStatusId == 1 || ds.DoctorScheduleStatusId == 3)) // Filter for dates from today onwards and statuses special (3) or available (1)
+            .Where(ds => ds.Date > today || (ds.Date == today && ds.StartTime >= now))
+            .Where(ds => ds.DoctorScheduleStatusId == 1 || ds.DoctorScheduleStatusId == 3) // Filter for statuses special (3) or available (1)
             .Select(ds => new DoctorScheduleDTO
             {
                 DoctorScheduleId = ds.DoctorScheduleId,

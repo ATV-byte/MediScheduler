@@ -3,11 +3,14 @@
 @using MediScheduler.Entities
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@using MediScheduler.Services
 @using Radzen
 @rendermode InteractiveServer
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DoctorScheduleService DoctorScheduleService
 @inject NavigationManager NavigationManager
 @inject SpecialtyService SpecialtyService
+@inject ProfileService ProfileService
 @attribute [Authorize(Roles = "user")]
 
 <section class="why-choose section">
@@ -41,7 +44,7 @@
                         WrapItems="@(!allowVirtualization)" AllowPaging="@(!allowVirtualization)"
                         Data="@filteredSchedules" TItem="DoctorScheduleDTO" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
             <Template Context="schedule">
-                <RadzenCard Style="width: 100%; padding: 0;">
+                <RadzenCard Style="width: 100%; padding: 0;" class="@(schedule.DoctorScheduleStatusName == "Special" ? "special-schedule" : "")">
                     <RadzenRow Gap="0">
                         <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 product-title">
                             <RadzenText TextStyle="TextStyle.Body2" TagName="TagName.H5" class="column-header">Specialty</RadzenText>
@@ -90,6 +93,10 @@
     .column-data {
         font-size: 18px;
     }
+
+    .special-schedule {
+        background-color: var(--rz-success-lighter) !important;
+    }
 </style>
 
 @code {
@@ -104,6 +111,7 @@
     private TimeSpan? filterStartTime;
     private TimeSpan? filterEndTime;
     IEnumerable<SpecialtyDTO> specialties;
+    private Task<int> risk;
 
     private List<TimeOption> timeOptions = Enumerable.Range(0, 24 * 60 / 15)
         .Select(i => new TimeOption { Value = TimeSpan.FromMinutes(i * 15), Display = TimeSpan.FromMinutes(i * 15).ToString(@"hh\:mm") })
@@ -114,7 +122,28 @@
         await base.OnInitializedAsync();
         try
         {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userName = user.Identity?.Name;
+
+            risk = ProfileService.GetRisk(userName);
+
             schedules = await DoctorScheduleService.GetSchedulesAsync();
+            if (risk.Result > 60)
+            {
+                schedules = schedules
+                .Where(schedule =>
+                 (schedule.DoctorScheduleStatusName == "Available" || schedule.DoctorScheduleStatusName == "Special"))
+                .ToList();
+            }
+            else
+            {
+                schedules = schedules
+                .Where(schedule =>
+                 (schedule.DoctorScheduleStatusName == "Available"))
+                .ToList();
+            }
+
             filteredSchedules = schedules;
 
             var allSpecialties = await SpecialtyService.GetAllSpecialtiesAsync();
@@ -130,14 +159,28 @@
 
     private void OnFilterChanged()
     {
-        filteredSchedules = schedules
+        if (risk.Result > 90)
+        {
+            filteredSchedules = schedules
+            .Where(schedule =>
+            (!filterSpecialtyId.HasValue || filterSpecialtyId == -1 || schedule.SpecialtyId == filterSpecialtyId) &&
+            (string.IsNullOrEmpty(filterDoctorName) || (schedule.DoctorFirstName + " " + schedule.DoctorLastName).Contains(filterDoctorName, StringComparison.OrdinalIgnoreCase)) &&
+            (!filterDate.HasValue || schedule.Date == DateOnly.FromDateTime(filterDate.Value.Date)) &&
+            (!filterStartTime.HasValue || schedule.StartTime >= TimeOnly.FromTimeSpan(filterStartTime.Value)) && (schedule.DoctorScheduleStatusName == "Available" || schedule.DoctorScheduleStatusName == "Special") &&
+            (!filterEndTime.HasValue || schedule.EndTime <= TimeOnly.FromTimeSpan(filterEndTime.Value)))
+            .ToList();
+        }
+        else
+        {
+            filteredSchedules = schedules
             .Where(schedule =>
                 (!filterSpecialtyId.HasValue || filterSpecialtyId == -1 || schedule.SpecialtyId == filterSpecialtyId) &&
                 (string.IsNullOrEmpty(filterDoctorName) || (schedule.DoctorFirstName + " " + schedule.DoctorLastName).Contains(filterDoctorName, StringComparison.OrdinalIgnoreCase)) &&
                 (!filterDate.HasValue || schedule.Date == DateOnly.FromDateTime(filterDate.Value.Date)) &&
-                (!filterStartTime.HasValue || schedule.StartTime >= TimeOnly.FromTimeSpan(filterStartTime.Value)) &&
+                (!filterStartTime.HasValue || schedule.StartTime >= TimeOnly.FromTimeSpan(filterStartTime.Value)) && (schedule.DoctorScheduleStatusName == "Available") &&
                 (!filterEndTime.HasValue || schedule.EndTime <= TimeOnly.FromTimeSpan(filterEndTime.Value)))
             .ToList();
+        }
     }
 
     private void ClearFilter(string filterType)
